@@ -8,7 +8,7 @@ public class SecondHomeWorkApp {
         System.out.println("Задание 2:");
         printIfPositiveNegative(-19);
         System.out.println("Задание 3:");
-        System.out.println(ifPositiveNegative(10));
+        System.out.println(ifPositiveNegative(-10));
         System.out.println("Задание 4:");
         printStrNTimes("Test", 5);
         System.out.println("Задание 5:");
@@ -30,7 +30,7 @@ public class SecondHomeWorkApp {
 
 
     public static boolean ifPositiveNegative(int value) {
-        return value >= 0;
+        return !(value >= 0);
     }
 
     public static void printStrNTimes(String str, int n) {
