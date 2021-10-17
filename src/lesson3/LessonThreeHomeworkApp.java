@@ -110,22 +110,20 @@ public class LessonThreeHomeworkApp {
     //поиск максимального или минимального значения в массиве
     //в параметр isMinMax передается строка min, если хотим получить минимальное значение и max, если максимальное
     private static int findMinMaxElement(int[] arr, String isMinMax){
-        int Min = arr[0];
-        int Max = 0;
+        int min = arr[0];
+        int max = 0;
         for (int j : arr) {
-            if (j < Min) {
-                Min = j;
+            if (j < min) {
+                min = j;
             }
-            if (j > Max) {
-                Max = j;
+            if (j > max) {
+                max = j;
             }
         }
-      //  TODO: Узнать в чем принципиальное отличие в сравнении строк методом  equals() от == и что лучше использовать
-       //   if (isMinMax.toLowerCase().equals("min")){
-        if (isMinMax.toLowerCase() == "min"){
-            return Min;
+        if (isMinMax.equalsIgnoreCase("min")){
+            return min;
         }
-        return Max;
+        return max;
     }
 
     //проверка есть ли точка баланса в массиве
