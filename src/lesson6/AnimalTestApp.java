@@ -9,10 +9,10 @@ public class AnimalTestApp {
 
         Animal[] animals = new Animal[4];
 
-        animals[0] = new Cat("Зевс", 140);
+        animals[0] = new Cat("Зевс", 140,0);
         animals[1] = new Dog("Шарик", 250, 500);
         animals[2] = new Dog("Найда", 400, 800);
-        animals[3] = new Cat("Айка", 300);
+        animals[3] = new Cat("Айка", 300, 0);
 
         for (Animal pet : animals) {
             pet.run(250);
@@ -27,7 +27,6 @@ public class AnimalTestApp {
         dogSuffix = getSuffix(dogCount);
         System.out.println("В банде " + catCount + " кош" + catSuffix+ " и "
                            + dogCount + " соба"+ dogSuffix);
-
 
     }
     private static String getSuffix(int count){
