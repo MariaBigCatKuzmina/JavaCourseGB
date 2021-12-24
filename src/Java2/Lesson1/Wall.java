@@ -7,13 +7,9 @@ public class Wall implements Barrier{
         this.height = height;
     }
 
-    public int getHeight() {
-        return height;
-    }
-
     @Override
     public boolean canOvercome(Athletics athlete){
-        return height <= athlete.jump();
+        return athlete.getJumpHeight() >= height;
     }
 
     @Override

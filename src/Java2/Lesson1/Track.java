@@ -9,15 +9,11 @@ public class Track implements Barrier{
 
     @Override
     public String toString() {
-        return "Трек длинной "+ length +"м.";
-    }
-
-    public int getLength() {
-        return length;
+        return "Трек длинной " + length + "м.";
     }
 
     @Override
     public boolean canOvercome(Athletics athlete){
-        return athlete.run() >= length;
+        return athlete.getRunDistance() >= length;
     }
 }

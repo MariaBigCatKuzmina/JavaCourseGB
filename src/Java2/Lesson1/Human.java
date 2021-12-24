@@ -22,12 +22,12 @@ public class Human implements Athletics{
     }
 
     @Override
-    public int run(){
+    public int getRunDistance(){
         return runningDistance;
     }
 
     @Override
-    public int jump() {
+    public int getJumpHeight() {
         return jumpingHeight;
     }
 }

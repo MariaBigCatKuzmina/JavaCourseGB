@@ -1,15 +1,9 @@
 package Java2.Lesson1;
 
 public class Cat implements Athletics{
-
     private final String name;
-
     private final int runningDistance;
     private final int jumpingHeight;
-
-    public String getName() {
-        return name;
-    }
 
     public Cat(String name, int runningDistance, int jumpingHeight) {
         this.name = name;
@@ -23,12 +17,12 @@ public class Cat implements Athletics{
     }
 
     @Override
-    public int run(){
+    public int getRunDistance(){
        return runningDistance;
     }
 
     @Override
-    public int jump(){
+    public int getJumpHeight(){
         return jumpingHeight;
     }
 

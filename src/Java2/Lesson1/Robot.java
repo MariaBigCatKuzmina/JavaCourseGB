@@ -11,22 +11,18 @@ public class Robot implements Athletics{
         this.jumpingHeight = jumpingHeight;
     }
 
-    public String getModel() {
-        return model;
-    }
-
     @Override
     public String toString() {
         return "Робот " + model;
     }
 
     @Override
-    public int run() {
+    public int getRunDistance() {
         return runningDistance;
     }
 
     @Override
-    public int jump() {
+    public int getJumpHeight() {
         return jumpingHeight;
     }
 }
