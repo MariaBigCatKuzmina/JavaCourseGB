@@ -2,10 +2,16 @@ package Java2.Lesson2;
 
 public class TestExceptions {
 
+    public static boolean isCorrectArrayDimension(String[][] stringArray) {
+        for (String[] strings : stringArray) {
+            if (stringArray.length != 4 || strings.length != 4) {
+                throw new MyArraySizeException();
+            }
+        }
+        return true;
+    }
     public static int convertAndSumArrayElements(String[][] stringArray) {
-        if (stringArray.length != 4 || stringArray[0].length != 4) {
-            throw new MyArraySizeException();
-        } else {
+        if (isCorrectArrayDimension(stringArray)) {
             int i = 0, j = 0;
             try {
                 int sum = 0;
@@ -19,6 +25,7 @@ public class TestExceptions {
                 throw new MyArrayDataException(i, j);
             }
         }
+        return 0;
     }
 
     public static void main(String[] args) {
@@ -28,14 +35,9 @@ public class TestExceptions {
 
         try {
             System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testArray));
-            System.out.println(convertAndSumArrayElements(testConvertErrArray));
-        } catch (MyArrayDataException e) {
-            e.fillInStackTrace();
-            System.out.println(e.getMessage());
-        }
-        try {
-            System.out.println(convertAndSumArrayElements(testSizeExceptionArray));
-        } catch (MyArraySizeException e) {
+            System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testConvertErrArray));
+            System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testSizeExceptionArray));
+        } catch (MyArrayDataException | MyArraySizeException e ) {
             e.fillInStackTrace();
             System.out.println(e.getMessage());
         }
