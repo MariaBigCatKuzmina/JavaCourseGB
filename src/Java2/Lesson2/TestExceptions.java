@@ -2,30 +2,27 @@ package Java2.Lesson2;
 
 public class TestExceptions {
 
-    public static boolean isCorrectArrayDimension(String[][] stringArray) {
+    public static void isCorrectArrayDimension(String[][] stringArray) {
         for (String[] strings : stringArray) {
             if (stringArray.length != 4 || strings.length != 4) {
                 throw new MyArraySizeException();
             }
         }
-        return true;
     }
+
     public static int convertAndSumArrayElements(String[][] stringArray) {
-        if (isCorrectArrayDimension(stringArray)) {
-            int i = 0, j = 0;
-            try {
-                int sum = 0;
-                for (i = 0; i < stringArray.length; i++) {
-                    for (j = 0; j < stringArray[i].length; j++) {
-                        sum = sum + Integer.parseInt(stringArray[i][j]);
-                    }
+        isCorrectArrayDimension(stringArray);
+        int sum = 0;
+        for (int i = 0; i < stringArray.length; i++) {
+            for (int j = 0; j < stringArray[i].length; j++) {
+                try {
+                    sum = sum + Integer.parseInt(stringArray[i][j]);
+                } catch (NumberFormatException e) {
+                    throw new MyArrayDataException(i, j);
                 }
-                return sum;
-            } catch (NumberFormatException e) {
-                throw new MyArrayDataException(i, j);
             }
         }
-        return 0;
+        return sum;
     }
 
     public static void main(String[] args) {
@@ -37,7 +34,7 @@ public class TestExceptions {
             System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testArray));
             System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testConvertErrArray));
             System.out.println("Сумма элементов массива = " + convertAndSumArrayElements(testSizeExceptionArray));
-        } catch (MyArrayDataException | MyArraySizeException e ) {
+        } catch (MyArrayDataException | MyArraySizeException e) {
             e.fillInStackTrace();
             System.out.println(e.getMessage());
         }

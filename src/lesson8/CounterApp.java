@@ -15,7 +15,6 @@ public class CounterApp extends JFrame {
         setTitle("Counter");
         setAlwaysOnTop(true);
         setVisible(true);
-
         Font font = new Font("Arial", Font.BOLD, 32);
 
         JPanel stepPanel = new JPanel();
