@@ -54,6 +54,7 @@ public class Network {
             while (true) {
                 try {
                     String message = inputStream.readUTF();
+                    System.out.println("Server: " + message);
                     messageHandler.accept(message);
                 } catch (IOException e) {
                     System.err.println("Не удалось получить сообщение");

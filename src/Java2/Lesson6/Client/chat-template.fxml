@@ -9,8 +9,8 @@
        <HBox alignment="BASELINE_CENTER" prefHeight="25.0" BorderPane.alignment="CENTER">
           <children>
               <Label prefHeight="34.0" prefWidth="78.0" text="Сообщение:" textOverrun="CLIP" HBox.hgrow="NEVER" />
-              <TextField fx:id="messageField" maxWidth="1.7976931348623157E308" onAction="#onSendButtonClick" prefHeight="27.0" prefWidth="333.0" HBox.hgrow="ALWAYS" />
-              <Button fx:id="sendButton" mnemonicParsing="false" onAction="#onSendButtonClick" prefHeight="27.0" prefWidth="90.0" text="Отправить" HBox.hgrow="NEVER" />
+              <TextField fx:id="messageField" maxWidth="1.7976931348623157E308" onAction="#sendMessage" prefHeight="27.0" prefWidth="333.0" HBox.hgrow="ALWAYS" />
+              <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendMessage" prefHeight="27.0" prefWidth="90.0" text="Отправить" HBox.hgrow="NEVER" />
           </children>
          <padding>
             <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
@@ -37,7 +37,7 @@
    <center>
       <SplitPane dividerPositions="0.2682926829268293">
          <items>
-            <ListView fx:id="userTree" prefHeight="335.0" prefWidth="156.0" />
+            <ListView fx:id="userList" prefHeight="335.0" prefWidth="156.0" />
             <TextArea fx:id="chatArea" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER" />
          </items>
       </SplitPane>

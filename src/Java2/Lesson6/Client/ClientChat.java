@@ -33,7 +33,7 @@ public class ClientChat extends Application {
         this.stage.setScene(scene);
 
         ClientController controller = fxmlLoader.getController();
-        controller.userTree.getItems().addAll("User1", "User2");
+        controller.userList.getItems().addAll("User1", "User2");
 
         stage.show();
         connectToServer(controller);
@@ -57,8 +57,6 @@ public class ClientChat extends Application {
             }
         });
     }
-
-
 
     public void showErrorDialog(String errorMessage) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
