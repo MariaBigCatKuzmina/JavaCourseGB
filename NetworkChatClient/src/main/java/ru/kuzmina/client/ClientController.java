@@ -21,7 +21,6 @@ public class ClientController {
     @FXML private TextField messageField;
     @FXML private Button sendButton;
 
-    private Network network;
     private ClientChat application;
 
     public void sendMessage() {
@@ -32,28 +31,30 @@ public class ClientController {
             return;
         }
 
-        String sender = null;
+        String recipient = null;
         if (!userList.getSelectionModel().isEmpty()) {
-            sender = userList.getSelectionModel().getSelectedItem();
+            recipient = userList.getSelectionModel().getSelectedItem();
         }
         try {
-            message = sender != null ? String.join(": ", sender, message) : message;
-            network.sendMessage(message);
+            String outMessage = recipient != null ? String.format("/private %s %s", recipient, message) : message;
+            Network.getInstance().sendMessage(outMessage);
         } catch (IOException e) {
             application.showErrorDialog("Ошибка передачи данных по сети");
             e.printStackTrace();
         }
-        appendMessageToChat("Я", message);
+        appendMessageToChat("Я",recipient, message);
     }
 
-    private void appendMessageToChat(String sender, String message) {
+    private void appendMessageToChat(String sender, String recipient, String message) {
         chatArea.appendText(DateFormat.getDateTimeInstance().format(new Date()));
         chatArea.appendText(System.lineSeparator());
 
-        if (sender != null) {
-            chatArea.appendText(sender + ":");
-            chatArea.appendText(System.lineSeparator());
-        }
+        String messageHeader;
+        messageHeader = sender != null ? sender : "no sender";
+        messageHeader = recipient != null && sender != null ? messageHeader + "->"  + recipient : messageHeader;
+
+        chatArea.appendText(messageHeader);
+        chatArea.appendText(System.lineSeparator());
         chatArea.appendText(message);
         chatArea.appendText(System.lineSeparator());
         chatArea.appendText(System.lineSeparator());
@@ -65,22 +66,31 @@ public class ClientController {
         ((Stage) sendButton.getScene().getWindow()).close();
     }
 
-    public void setNetwork(Network network) {
-        this.network = network;
-        this.network.waitMessages(new Consumer<String>() {
+    public void setApplication(ClientChat application) {
+        this.application = application;
+    }
+
+    public void initializeMessageHandler() {
+        Network.getInstance().waitMessages(new Consumer<String>() {
             @Override
             public void accept(String message) {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        appendMessageToChat("Server", message);
+                        System.out.println("ClientController.initializeMessageHandler.message"+message);
+                        String sender, finalMessage;
+                        if (message.startsWith("/private")) {
+                            String[] parts = message.split(" ");
+                            sender = parts[1];
+                            finalMessage = parts[2];
+                        } else {
+                            sender = "Server";
+                            finalMessage = message;
+                        }
+                        appendMessageToChat(sender, null, finalMessage);
                     }
                 });
             }
         });
-    }
-
-    public void setApplication(ClientChat application) {
-        this.application = application;
     }
 }

@@ -9,10 +9,14 @@ import java.net.Socket;
 public class ClientHandler {
     public static final String AUTH_OK = "/authOk";
     public static final String AUTH = "/auth";
-    private MyServer server;
+    public static final String AUTH_DUPLICATE = "/authDuplicate";
+
+    private final MyServer server;
     private final Socket clientSocket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
+    private String userName;
+
 
     public ClientHandler(MyServer myServer, Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -42,29 +46,32 @@ public class ClientHandler {
         }).start();
     }
 
-
     private void authenticate() throws IOException {
-        String message = inputStream.readUTF();
-        if (message.startsWith(AUTH)) {
-            String[] authParts = message.split(" ");
-            String login = authParts[1];
-            String password = authParts[2];
+        while (true) {
+            String message = inputStream.readUTF();
+            if (message.startsWith(AUTH)) {
+                String[] authParts = message.split(" ");
+                String login = authParts[1];
+                String password = authParts[2];
 
-            String userName = server.getAuthService().getUserNameByLoginAndPassword(login, password);
+                this.userName = server.getAuthService().getUserNameByLoginAndPassword(login, password);
 
-            if (userName == null){
-                sendMessage("Некорректный логин и пароль");
-            } else {
-                sendMessage(String.format("%s %s",AUTH_OK, userName));
-                server.subscribe(this);
+                if (userName == null) {
+                    sendMessage("Некорректный логин и пароль");
+                } else if (!server.isClientConnected(this)) {
+                    sendMessage(String.format("%s %s", AUTH_OK, userName));
+                    server.subscribe(this);
+                    return;
+                } else {
+                    sendMessage(String.format("%s %s", AUTH_DUPLICATE, "Пользователь с таким логином и паролем уже подключен"));
+                }
             }
         }
     }
 
     private void readMessages() throws IOException {
-        while (true){
+        while (true) {
             String incomingMessage = inputStream.readUTF().trim();
-            System.out.println("incomingMessage = " + incomingMessage);
             if (incomingMessage.startsWith("/end")) {
                 return;
             } else {
@@ -74,7 +81,14 @@ public class ClientHandler {
     }
 
     private void processMessage(String incomingMessage) throws IOException {
-        this.server.broadcastMessage(incomingMessage, this);
+        if (incomingMessage.startsWith("/private")) {
+            String[] parts = incomingMessage.split(" ");
+            if (!parts[2].isEmpty()) {
+                this.server.sendPrivateMessage(parts[2], this, parts[1]);
+            }
+        } else {
+            this.server.broadcastMessage(incomingMessage, this);
+        }
     }
 
 
@@ -86,4 +100,9 @@ public class ClientHandler {
         server.unsubscribe(this);
         clientSocket.close();
     }
+
+    public String getUserName() {
+        return userName;
+    }
+
 }

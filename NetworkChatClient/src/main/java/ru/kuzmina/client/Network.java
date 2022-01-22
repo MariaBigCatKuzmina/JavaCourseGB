@@ -12,18 +12,25 @@ public class Network {
 
     private int port;
     private String host;
-
-
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
 
-    public Network(int port, String host) {
+    private static Network INSTANCE;
+
+    public static Network getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Network();
+        }
+        return INSTANCE;
+    }
+
+    private Network(int port, String host) {
         this.port = port;
         this.host = host;
     }
 
-    public Network() {
+    private Network() {
         this(SERVER_PORT, SERVER_HOST);
     }
 
@@ -53,6 +60,9 @@ public class Network {
         Thread thread = new Thread(() -> {
             while (true) {
                 try {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return;
+                    }
                     String message = inputStream.readUTF();
                     messageHandler.accept(message);
                 } catch (IOException e) {
