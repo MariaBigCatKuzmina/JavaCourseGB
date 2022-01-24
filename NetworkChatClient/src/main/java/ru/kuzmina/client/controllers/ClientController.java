@@ -1,4 +1,4 @@
-package ru.kuzmina.client;
+package ru.kuzmina.client.controllers;
 
 
 import javafx.application.Platform;
@@ -8,6 +8,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ru.kuzmina.client.ClientChat;
+import ru.kuzmina.client.model.Network;
 
 import java.io.IOException;
 import java.text.DateFormat;

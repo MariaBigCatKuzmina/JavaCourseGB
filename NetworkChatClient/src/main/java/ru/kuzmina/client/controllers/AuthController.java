@@ -6,9 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import ru.kuzmina.client.ClientChat;
-import ru.kuzmina.client.Network;
+import ru.kuzmina.client.dialogs.Dialogs;
+import ru.kuzmina.client.model.Network;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -30,21 +30,25 @@ public class AuthController {
         String login = loginField.getText();
         String password = passwordField.getText();
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
-            clientChat.showErrorDialog("Логин и пароль не должны быть пустыми");
+            Dialogs.AuthErrors.EMPTY_CREDENTIALS.show();
             return;
         }
 
         String authCommandMessage = String.format("%s %s %s", AUTH_COMMAND, login, password);
+        if (!hasConnectedToServer()) {
+            Dialogs.NetworkError.SERVER_CONNECT.show();;
+        }
         try {
             Network.getInstance().sendMessage(authCommandMessage);
         } catch (IOException e) {
-            clientChat.showErrorDialog("Ошибка передачи данных по сети");
+            Dialogs.NetworkError.SEND_MESSAGE.show();
             e.printStackTrace();
         }
     }
 
-    public void setClientChat(ClientChat clientChat) {
-        this.clientChat = clientChat;
+    private  boolean hasConnectedToServer() {
+        Network network = Network.getInstance();
+        return network.isConnected() || network.connect();
     }
 
     public void initializeMessageHandler() {
@@ -72,4 +76,10 @@ public class AuthController {
             }
         });
     }
+
+    public void setClientChat(ClientChat clientChat) {
+        this.clientChat = clientChat;
+    }
+
+
 }

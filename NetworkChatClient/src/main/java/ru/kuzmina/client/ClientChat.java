@@ -11,11 +11,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.kuzmina.client.controllers.AuthController;
+import ru.kuzmina.client.controllers.ClientController;
+import ru.kuzmina.client.model.Network;
 
 import java.io.IOException;
 
 
 public class ClientChat extends Application {
+    public static ClientChat INSTANCE;
 
     public static final String CONNECTION_ERROR_MESSAGE = "Невозможно установить  сетевое соединение";
 
@@ -29,6 +32,11 @@ public class ClientChat extends Application {
         ClientController controller = createChatDialog();
         createAuthDialog();
         controller.initializeMessageHandler();
+    }
+
+    @Override
+    public void init() throws Exception {
+        INSTANCE = this;
     }
 
     private void createAuthDialog() throws IOException {

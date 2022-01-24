@@ -1,4 +1,4 @@
-package ru.kuzmina.client;
+package ru.kuzmina.client.model;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,6 +17,7 @@ public class Network {
     private DataOutputStream outputStream;
 
     private static Network INSTANCE;
+    private boolean isConnected;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -36,9 +37,10 @@ public class Network {
 
     public boolean connect() {
         try {
-            socket = new Socket(this.host, this.port);
-            inputStream = new DataInputStream(socket.getInputStream());
-            outputStream = new DataOutputStream(socket.getOutputStream());
+            this.socket = new Socket(this.host, this.port);
+            this.inputStream = new DataInputStream(socket.getInputStream());
+            this.outputStream = new DataOutputStream(socket.getOutputStream());
+            this.isConnected = true;
             return true;
         } catch (IOException e) {
             System.err.println("Ошибка подключения к серверу");
@@ -82,5 +84,9 @@ public class Network {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isConnected() {
+        return isConnected;
     }
 }
