@@ -1,22 +1,27 @@
 package ru.kuzmina.client.model;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import ru.kuzmina.clientserver.Command;
+
+import java.io.*;
 import java.net.Socket;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Network {
+
+    private final List<ReadCommandListener> listeners = new CopyOnWriteArrayList<>();
+
     public static final String SERVER_HOST = "localhost";
     public static final int SERVER_PORT = 8189;
 
-    private int port;
-    private String host;
+    private final int port;
+    private final String host;
     private Socket socket;
-    private DataInputStream inputStream;
-    private DataOutputStream outputStream;
+    private ObjectInputStream inputStream;
+    private ObjectOutputStream outputStream;
 
     private static Network INSTANCE;
+    private Thread readMessageProcess;
     private boolean isConnected;
 
     public static Network getInstance() {
@@ -38,8 +43,9 @@ public class Network {
     public boolean connect() {
         try {
             this.socket = new Socket(this.host, this.port);
-            this.inputStream = new DataInputStream(socket.getInputStream());
-            this.outputStream = new DataOutputStream(socket.getOutputStream());
+            this.outputStream = new ObjectOutputStream(socket.getOutputStream());
+            this.inputStream = new ObjectInputStream(socket.getInputStream());
+            readMessageProcess = startReadMessageProcess();
             this.isConnected = true;
             return true;
         } catch (IOException e) {
@@ -50,36 +56,77 @@ public class Network {
     }
 
     public void sendMessage(String message) throws IOException {
+        sendCommand(Command.publicMessageCommand(message));
+    }
+
+    private void sendCommand(Command command) throws IOException {
         try {
-            outputStream.writeUTF(message);
+            outputStream.writeObject(command);
         } catch (IOException e) {
             System.err.println("Не удалось отправить сообщение");
             throw e;
         }
+
     }
 
-    public void waitMessages(Consumer<String> messageHandler) {
+    public void sendPrivateMessage(String recipient, String message) throws IOException {
+        sendCommand(Command.privateMessageCommand(recipient, message));
+    }
+
+    public void sendAuthMessage(String login, String password) throws IOException {
+        sendCommand(Command.authCommand(login, password));
+    }
+
+    public Thread startReadMessageProcess() {
         Thread thread = new Thread(() -> {
             while (true) {
                 try {
                     if (Thread.currentThread().isInterrupted()) {
                         return;
                     }
-                    String message = inputStream.readUTF();
-                    messageHandler.accept(message);
+                    Command command = readCommand();
+                    for (ReadCommandListener commandListener : listeners) {
+                        commandListener.processReceivedCommand(command);
+                    }
                 } catch (IOException e) {
-                    System.err.println("Не удалось получить сообщение");
+                    System.err.println("Не удалось получить команду");
                     e.printStackTrace();
+                    close();
                     break;
                 }
             }
         });
         thread.setDaemon(true);
         thread.start();
+        return thread;
+    }
+
+    private Command readCommand() throws IOException {
+        Command command = null;
+        try {
+            command = (Command) inputStream.readObject();
+        } catch (ClassNotFoundException e) {
+            System.err.println("Failed to read a command class");
+            e.printStackTrace();
+        }
+        return command;
+    }
+
+    public ReadCommandListener addReadMessageListener(ReadCommandListener listener) {
+        listeners.add(listener);
+        return listener;
+    }
+
+    public void removeReadMessageListener(ReadCommandListener listener) {
+        listeners.remove(listener);
     }
 
     public void close() {
         try {
+            isConnected = false;
+            readMessageProcess.interrupt();
+            inputStream.close();
+            outputStream.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();

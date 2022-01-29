@@ -9,9 +9,13 @@ import javafx.scene.control.TextField;
 import ru.kuzmina.client.ClientChat;
 import ru.kuzmina.client.dialogs.Dialogs;
 import ru.kuzmina.client.model.Network;
+import ru.kuzmina.client.model.ReadCommandListener;
+import ru.kuzmina.clientserver.Command;
+import ru.kuzmina.clientserver.CommandType;
+import ru.kuzmina.clientserver.commands.AuthOkCommandData;
+import ru.kuzmina.clientserver.commands.ErrorCommandData;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 public class AuthController {
 
@@ -19,11 +23,14 @@ public class AuthController {
     public static final String AUTH_OK_COMMAND = "/authOk";
     public static final String AUTH_DUPLICATE_COMMAND = "/authDuplicate";
 
-    @FXML private TextField loginField;
-    @FXML private PasswordField passwordField;
-    @FXML private Button authButton;
+    @FXML
+    private TextField loginField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private Button authButton;
+    private ReadCommandListener readCommandListener;
 
-    private ClientChat clientChat;
 
     @FXML
     public void executeAuth(ActionEvent actionEvent) {
@@ -34,52 +41,50 @@ public class AuthController {
             return;
         }
 
-        String authCommandMessage = String.format("%s %s %s", AUTH_COMMAND, login, password);
         if (!hasConnectedToServer()) {
-            Dialogs.NetworkError.SERVER_CONNECT.show();;
+            Dialogs.NetworkError.SERVER_CONNECT.show();
         }
         try {
-            Network.getInstance().sendMessage(authCommandMessage);
+            Network.getInstance().sendAuthMessage(login, password);
         } catch (IOException e) {
             Dialogs.NetworkError.SEND_MESSAGE.show();
             e.printStackTrace();
         }
     }
 
-    private  boolean hasConnectedToServer() {
+    private boolean hasConnectedToServer() {
         Network network = Network.getInstance();
         return network.isConnected() || network.connect();
     }
 
     public void initializeMessageHandler() {
-        Network.getInstance().waitMessages(new Consumer<String>() {
+        readCommandListener = getNetwork().addReadMessageListener(new ReadCommandListener() {
             @Override
-            public void accept(String message) {
-                if (message.startsWith(AUTH_OK_COMMAND)) {
-                    String[] parts = message.split(" ");
-                    String userName = parts[1];
-                    Thread.currentThread().interrupt(); // закрываем окно прерыванием потока
-                    Platform.runLater(() -> {
-                        clientChat.getChatStage().setTitle(userName);
-                        clientChat.getClientController().userList.getItems().remove(userName);
-                        clientChat.getAuthStage().close();
-                    });
-                } else if (message.startsWith(AUTH_DUPLICATE_COMMAND)) {
-                    Platform.runLater(() -> {
-                        clientChat.showErrorDialog("Пользователь с таким логином и паролем уже подключен");
-                    });
-                } else{
-                    Platform.runLater(() -> {
-                        clientChat.showErrorDialog("Пользователя с таким логином и паролем не существует");
-                    });
+            public void processReceivedCommand(Command command) {
+                switch (command.getType()) {
+                    case AUTH_OK: {
+                        Platform.runLater(() -> {
+                            ClientChat.INSTANCE.switchToMainChatWindow(((AuthOkCommandData) command.getData()).getUserName());
+                        });
+                        break;
+                    }
+                    case ERROR: {
+                        Platform.runLater(() -> {
+                            Dialogs.AuthErrors.INVALID_CREDENTIALS.show(((ErrorCommandData) command.getData()).getErrorMessage());
+                        });
+                        break;
+                    }
                 }
             }
         });
     }
 
-    public void setClientChat(ClientChat clientChat) {
-        this.clientChat = clientChat;
+
+    private Network getNetwork() {
+        return Network.getInstance();
     }
 
-
+    public void close() {
+        getNetwork().removeReadMessageListener(readCommandListener);
+    }
 }

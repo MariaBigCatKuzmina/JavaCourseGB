@@ -19,6 +19,10 @@ public class Dialogs {
         public void show() {
             showDialog(Alert.AlertType.ERROR, TITLE, TYPE, message);
         }
+
+        public void show(String errorMessage) {
+            showDialog(Alert.AlertType.ERROR, TITLE, TYPE, errorMessage);
+        }
     }
 
     public enum NetworkError {

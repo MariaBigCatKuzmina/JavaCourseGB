@@ -2,6 +2,7 @@ package ru.kuzmina.client.controllers;
 
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -10,20 +11,31 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ru.kuzmina.client.ClientChat;
 import ru.kuzmina.client.model.Network;
+import ru.kuzmina.client.model.ReadCommandListener;
+import ru.kuzmina.clientserver.Command;
+import ru.kuzmina.clientserver.CommandType;
+import ru.kuzmina.clientserver.commands.ClientMessageCommandData;
+import ru.kuzmina.clientserver.commands.UpdateUserListCommandData;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.function.Consumer;
+import java.util.List;
 
 public class ClientController {
 
-    @FXML public ListView<String> userList;
-    @FXML public TextArea chatArea;
-    @FXML private TextField messageField;
-    @FXML private Button sendButton;
 
     private ClientChat application;
+
+    @FXML
+    public ListView<String> userList;
+    @FXML
+    public TextArea chatArea;
+    @FXML
+    private TextField messageField;
+    @FXML
+    private Button sendButton;
+
 
     public void sendMessage() {
 
@@ -38,13 +50,17 @@ public class ClientController {
             recipient = userList.getSelectionModel().getSelectedItem();
         }
         try {
-            String outMessage = recipient != null ? String.format("/private %s %s", recipient, message) : message;
-            Network.getInstance().sendMessage(outMessage);
+            if (recipient != null) {
+                Network.getInstance().sendPrivateMessage(recipient, message);
+            } else {
+                Network.getInstance().sendMessage(message);
+            }
+
         } catch (IOException e) {
             application.showErrorDialog("Ошибка передачи данных по сети");
             e.printStackTrace();
         }
-        appendMessageToChat("Я",recipient, message);
+        appendMessageToChat("Я", recipient, message);
     }
 
     private void appendMessageToChat(String sender, String recipient, String message) {
@@ -53,7 +69,7 @@ public class ClientController {
 
         String messageHeader;
         messageHeader = sender != null ? sender : "no sender";
-        messageHeader = recipient != null && sender != null ? messageHeader + "->"  + recipient : messageHeader;
+        messageHeader = recipient != null && sender != null ? messageHeader + " -> " + recipient : messageHeader + ": ";
 
         chatArea.appendText(messageHeader);
         chatArea.appendText(System.lineSeparator());
@@ -68,30 +84,23 @@ public class ClientController {
         ((Stage) sendButton.getScene().getWindow()).close();
     }
 
-    public void setApplication(ClientChat application) {
-        this.application = application;
-    }
+//    public void setApplication(ClientChat application) {
+//        this.application = application;
+//    }
 
     public void initializeMessageHandler() {
-        Network.getInstance().waitMessages(new Consumer<String>() {
+        Network.getInstance().addReadMessageListener(new ReadCommandListener() {
             @Override
-            public void accept(String message) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.out.println("ClientController.initializeMessageHandler.message"+message);
-                        String sender, finalMessage;
-                        if (message.startsWith("/private")) {
-                            String[] parts = message.split(" ");
-                            sender = parts[1];
-                            finalMessage = parts[2];
-                        } else {
-                            sender = "Server";
-                            finalMessage = message;
-                        }
-                        appendMessageToChat(sender, null, finalMessage);
-                    }
-                });
+            public void processReceivedCommand(Command command) {
+                if (command.getType() == CommandType.CLIENT_MESSAGE) {
+                    ClientMessageCommandData data = (ClientMessageCommandData) command.getData();
+                    appendMessageToChat(data.getSender(), null, data.getMessage());
+                } else if (command.getType() == CommandType.UPDATE_USER_LIST) {
+                    UpdateUserListCommandData data = (UpdateUserListCommandData) command.getData();
+                    Platform.runLater(() -> {
+                        userList.setItems(FXCollections.observableList(data.getUsers()));
+                    });
+                }
             }
         });
     }
