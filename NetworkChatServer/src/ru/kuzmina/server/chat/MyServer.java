@@ -1,5 +1,6 @@
 package ru.kuzmina.server.chat;
 
+import ru.kuzmina.clientserver.Command;
 import ru.kuzmina.server.chat.auth.AuthService;
 
 import java.io.IOException;
@@ -12,10 +13,6 @@ public class MyServer {
 
     private final List<ClientHandler> clients = new ArrayList<>();
     private AuthService authService;
-
-    public AuthService getAuthService() {
-        return authService;
-    }
 
     public void start(int port) {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -38,44 +35,56 @@ public class MyServer {
         clientHandler.handle();
     }
 
-    public void broadcastMessage(String message, ClientHandler sender) throws IOException {
+    public synchronized void broadcastMessage(String message, ClientHandler sender) throws IOException {
         for (ClientHandler client : clients) {
-            if (client != sender){
-                client.sendMessage(message);
+            if (client != sender) {
+                client.sendCommand(Command.clientMessageCommand(sender.getUserName(),message));
             }
         }
     }
 
-    public void sendPrivateMessage(String message, ClientHandler sender, String recipientName) throws IOException {
+    public synchronized void sendPrivateMessage(ClientHandler sender, String recipientName, String message) throws IOException {
         for (ClientHandler client : clients) {
-            if (client.getUserName().equals(recipientName)){
-                System.out.println("recipientName="+recipientName+",message="+message);
-                client.sendMessage(String.format("/private %s %s ", sender.getUserName(), message));
+            if (client.getUserName().equals(recipientName) && client != sender){
+                client.sendCommand(Command.clientMessageCommand(sender.getUserName(), message));
                 return;
             }
         }
     }
 
-    public  boolean isClientConnected (ClientHandler client)
+    public synchronized boolean isClientConnected (String userName)
     {
         for (ClientHandler clientItm : this.clients) {
-            if (clientItm.equals(client)) {
+            if (clientItm.getUserName().equals(userName)) {
+
                 return true;
             }
         }
         return false;
-
     }
 
-    public void subscribe(ClientHandler client) {
+    public synchronized void subscribe(ClientHandler client) throws IOException {
         this.clients.add(client);
-        System.out.println("Client has connected");
+        notifyClientUserListUpdated();
     }
 
-
-    public void unsubscribe(ClientHandler client) {
+    public synchronized void unsubscribe(ClientHandler client) throws IOException {
         this.clients.remove(client);
+        notifyClientUserListUpdated();
     }
 
+    public AuthService getAuthService() {
+        return authService;
+    }
+
+    private void notifyClientUserListUpdated() throws IOException {
+        List<String> connectedUsers = new ArrayList<>();
+        for (ClientHandler client : clients) {
+            connectedUsers.add(client.getUserName());
+        }
+        for (ClientHandler client : clients) {
+            client.sendCommand(Command.updateUserListCommand(connectedUsers));
+        }
+    }
 
 }
