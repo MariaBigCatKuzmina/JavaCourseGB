@@ -1,8 +1,10 @@
 package Java3.Lesson1;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
-public class Box<F extends Fruit> {
+public class Box<F extends Fruit> implements Comparable{
     private final ArrayList<F> fruits;
 
     public void add(F fruit) {
@@ -21,14 +23,14 @@ public class Box<F extends Fruit> {
         return this.getBoxWeight() == anotherBox.getBoxWeight();
     }
 
-    public int compareWeights(Box<?> anotherBox) {
-        if (this.isEqualWeights(anotherBox)) {
-            return 0;
-        } else if (this.getBoxWeight() < anotherBox.getBoxWeight()) {
-            return -1;
-        }
-        return 1;
-    }
+//    public int compareTo(Box<?> anotherBox) {
+//        if (this.isEqualWeights(anotherBox)) {
+//            return 0;
+//        } else if (this.getBoxWeight() < anotherBox.getBoxWeight()) {
+//            return -1;
+//        }
+//        return 1;
+//    }
 
     public boolean pourInto(Box<F> anotherBox) {
         if (anotherBox != null) {
@@ -43,5 +45,16 @@ public class Box<F extends Fruit> {
 
     public Box() {
         this.fruits = new ArrayList<>();
+    }
+
+    @Override
+    public int compareTo(@NotNull Object anotherBox) {
+        if (this.isEqualWeights((Box<?>) anotherBox)) {
+            return 0;
+        } else if (this.getBoxWeight() < ((Box<?>) anotherBox).getBoxWeight()) {
+            return -1;
+        }
+        return 1;
+
     }
 }

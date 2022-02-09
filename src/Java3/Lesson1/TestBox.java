@@ -15,7 +15,7 @@ public class TestBox {
         orangeBox.add(new Orange(2.4));
 
         System.out.println(orangeBox.isEqualWeights(appleBox));
-        System.out.println(orangeBox.compareWeights(appleBox));
+        System.out.println(orangeBox.compareTo(appleBox));
 
         System.out.println("Коробка с апельсинами весит: " + orangeBox.getBoxWeight());
         System.out.println("Коробка с яблоками весит: " + appleBox.getBoxWeight());
