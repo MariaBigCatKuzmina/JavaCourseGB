@@ -13,8 +13,6 @@ public class PhoneBookApp {
         phoneBook.printPhoneBook();
     }
 
-
-    
     private static void fillPhoneBook() {
         phoneBook.add("Иванов", "22-12-33");
         phoneBook.add("Иванов", "20-10-44");
