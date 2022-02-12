@@ -57,24 +57,28 @@ public class WaitNotifyClass {
     }
 
     public static void main(String[] args) {
-        WaitNotifyClass waitNotifyClass = new WaitNotifyClass();
 
-        Thread threadA = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                waitNotifyClass.printA();
-            }
-        });
-
-        Thread threadB = new Thread(() -> {
-            waitNotifyClass.printB();
-        });
-
-        Thread threadC = new Thread(waitNotifyClass::printC);
-
-        threadA.start();
-        threadB.start();
-        threadC.start();
+        PrintThread pf = new PrintThread(5);
+        pf.printLetters();
     }
+//        WaitNotifyClass waitNotifyClass = new WaitNotifyClass();
+//
+//        Thread threadA = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                waitNotifyClass.printA();
+//            }
+//        });
+//
+//        Thread threadB = new Thread(() -> {
+//            waitNotifyClass.printB();
+//        });
+//
+//        Thread threadC = new Thread(waitNotifyClass::printC);
+//
+//        threadA.start();
+//        threadB.start();
+//        threadC.start();
+//    }
 
 }
