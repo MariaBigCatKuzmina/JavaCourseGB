@@ -13,8 +13,10 @@ public class RaceApplication {
         Race race = new Race(new Road(60), new Tunnel(CARS_COUNT / 2), new Road(40));
         Car[] cars = new Car[CARS_COUNT];
 
+        CyclicBarrier startBarrier = new CyclicBarrier(CARS_COUNT, () -> System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка началась!!!"));
+
         for (int i = 0; i < CARS_COUNT; i++) {
-            cars[i] = new Car(race, 20 + (int) (Math.random() * 10));
+            cars[i] = new Car(race, 20 + (int) (Math.random() * 10), startBarrier);
         }
 
         ExecutorService raceThreads = Executors.newFixedThreadPool(CARS_COUNT);
@@ -23,8 +25,6 @@ public class RaceApplication {
             raceThreads.submit(cars[i]);
         }
 
-        Car.getStartFlag().await();
-        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка началась!!!");
         Car.getEndFlag().await();
         System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка закончилась!!!");
 
