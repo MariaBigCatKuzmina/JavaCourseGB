@@ -52,7 +52,7 @@ public class Car implements Runnable {
         return speed;
     }
 
-    public synchronized String getName() {
+    public String getName() {
         return name;
     }
 
